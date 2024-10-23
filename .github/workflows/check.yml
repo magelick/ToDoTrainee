@@ -1,0 +1,45 @@
+name: 'Code checks'
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-job:
+    runs-on: macos-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: 'Install Python'
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.12.2'
+
+    - name: 'Install main dependencies'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r main_requirements.txt
+      working-directory: .
+
+    - name: 'Create virtual environment for todo_backend_service'
+      run: python -m venv venv
+      working-directory: ./todo_backend_service
+
+    - name: 'Install dependencies for todo_backend_service'
+      run: |
+        ./venv/bin/pip install --upgrade pip
+        ./venv/bin/pip install -r requirements.txt
+      working-directory: ./todo_backend_service
+
+    - name: 'Run black on todo_backend_service'
+      run: black --config ../.black .
+      working-directory: ./todo_backend_service
+
+    - name: 'Run flake8 on todo_backend_service'
+      run: flake8 --config ../.flake8 .
+      working-directory: ./todo_backend_service
+
+    - name: 'Run mypy on todo_backend_service'
+      run: mypy --ignore-missing-imports --explicit-package-bases .
+      working-directory: ./todo_backend_service
